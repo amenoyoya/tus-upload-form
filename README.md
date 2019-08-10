@@ -3,6 +3,11 @@
 ## What's this?
 tusプロトコルを用いた大サイズファイルのアップロードフォーム
 
+- **tusプロトコル**
+    - 公式サイト: https://tus.io/
+    - アップロードファイルを小さいチャンクに分割してアップロードするため、サーバーのアップロード制限に引っかからない
+    - レジューム機能があるため、アップロード途中でエラーが起きても再開できる
+
 ***
 
 ## Setup
@@ -23,4 +28,11 @@ $ yarn install
 # test run
 $ yarn start
 # -> start webpack-dev-server at http://localhost:3000
+```
+
+
+### Installation
+```bash
+# install tus-js-client
+$ yarn add -D tus-js-client
 ```
