@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        {# 共通ヘッダ #}
+        {% block head %}
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>{% block title %}{% endblock %}</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.5/css/bulma.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.9.0/css/all.min.css">
+        {% endblock %}
+    </head>
+    <body>
+        {# コンテンツ部分 #}
+        <section class="section">
+            <div class="container">
+                <div class="columns">
+                    {% block content %}
+                    {% endblock %}
+                </div>
+            </div>
+        </section>
+ 
+        {# 共通フッター #}
+        <footer class="footer">
+            {% block footer %}
+            {% endblock %}
+        </footer>
+
+        {# Vue + webpack によりバンドルされた bundle.js を読み込む #}
+        <script src="/static/js/bundle.js"></script>
+    </body>
+</html>

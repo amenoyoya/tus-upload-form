@@ -13,7 +13,7 @@ module.exports = {
     // バンドル後のファイル名
     filename: 'bundle.js',
     // 出力先のパス（※絶対パスで指定すること）
-    path: path.join(__dirname, 'public')
+    path: path.join(__dirname, 'static', 'js')
   },
   // ビルドしたJavaScriptにsource-mapを書き出す
   devtool: 'inline-soruce-map',

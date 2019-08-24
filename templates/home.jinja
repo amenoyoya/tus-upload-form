@@ -1,0 +1,17 @@
+{% extends "elements/html5.jinja" %}
+     
+{% block title %}tusアップロードフォーム{% endblock %}
+ 
+{% block head %}
+    {{ super() }}
+    <meta description="tusプロトコルを用いた巨大ファイルのアップロードフォーム">
+{% endblock %}
+         
+{% block content %}
+    <div class="column">
+        <h1 class="title">tusアップロードフォーム</h1>
+
+        {# Vueにより id="app" の要素が置き換えられる #}
+        <div id="app"></div>
+    </div>
+{% endblock %}

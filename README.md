@@ -20,6 +20,7 @@ tusプロトコルを用いた大サイズファイルのアップロードフ�
     - yarn: `1.15.2`
 - Server Side:
     - python: `3.7.4` (anaconda: `4.5.11`)
+        - flask: `1.0.2`
         - awscli: `1.16.225`
         - boto3: `1.9.215`
 
@@ -51,8 +52,7 @@ $ yarn add -D tus-js-client
 ### Preparation
 ```bash
 # install python modules
-$ pip install awscli
-$ pip install boto3
+$ pip install awscli boto3 flask
 
 # setup awscli
 $ aws configure
@@ -66,4 +66,24 @@ Default output format [None]: # <- enter: `json`
 # test upload to aws s3
 ## backetname: your s3 backet name
 $ aws s3 cp README.md s3://backetname/README.md
+```
+
+***
+
+## Development
+
+### Structure
+- Backend:
+    - http://localhost:3333
+    - Python + Flask
+- Frontend:
+    - Node.js + Vue.js + Webpack
+
+### Execution
+```bash
+# run webpack: watch mode
+$ yarn webpack --watch
+
+# run python + flask server: http://localhost:3333
+$ python server.py
 ```
