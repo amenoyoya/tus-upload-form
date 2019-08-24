@@ -58,8 +58,12 @@ $ pip install boto3
 $ aws configure
 AWS Access Key ID [None]:     # <- enter: AWS IAM Access Key ID
 AWS Secret Access Key [None]: # <- enter: AWS IAM Secret Access Key
-Default region name [None]:   # <- enter: AWS S3 region name (el. `us-east-2a`)
+Default region name [None]:   # <- enter: AWS S3 region name (el. `us-east-2`)
 Default output format [None]: # <- enter: `json`
 
 ## -> confirm aws settings: ~/.aws/credentials
+
+# test upload to aws s3
+## backetname: your s3 backet name
+$ aws s3 cp README.md s3://backetname/README.md
 ```
