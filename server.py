@@ -1,7 +1,15 @@
 from flask import Flask, render_template, request, make_response
 from pprint import pprint
 from datetime import datetime, timedelta
-import os, uuid
+import os, uuid, base64
+
+# metadata -> dict
+def metadata2dict(metadata):
+    data = {}
+    for field in metadata.split(','):
+        values = field.split(' ')
+        data[values[0]] = base64.b64decode(values[1]).decode('utf-8')
+    return data
 
 # save file, resumable
 def save_file(file_id, content):
@@ -27,10 +35,13 @@ def upload():
         'content_length': request.headers.get('Content-Length'),
         'upload_length': request.headers.get('Upload-Length'),
         'tus_resumable': request.headers.get('Tus-Resumable'),
-        'upload_metadata': request.headers.get('Upload-Metadata'),
+        'upload_metadata': metadata2dict(request.headers.get('Upload-Metadata')),
         'id': str(uuid.uuid4()) # 任意のファイルID生成
     }
     pprint(data)
+    if data['upload_metadata']['fileext'] != '':
+        # 拡張子がある場合は付与する
+        data['id'] += '.' + data['upload_metadata']['fileext']
     res = make_response('', 201)
     res.headers['Location'] = '/files/' + data['id']
     res.headers['Tus-Resumable'] = data['tus_resumable']
