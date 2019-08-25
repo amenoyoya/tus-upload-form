@@ -50,7 +50,7 @@ def upload():
         # 拡張子がある場合は付与する
         data['id'] += '.' + data['upload_metadata']['fileext']
     res = make_response('', 201)
-    res.headers['Location'] = '/files/' + data['id']
+    res.headers['Location'] = url_for('files/') + data['id']
     res.headers['Tus-Resumable'] = data['tus_resumable']
     files[data['id']] = int(data['upload_length']) # アップロード予定サイズを保持
     return res
