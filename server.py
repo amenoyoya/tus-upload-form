@@ -22,7 +22,7 @@ def save_file(file_id, content):
 
 # ベースURLのルーティング関数
 ## ベースURL: uWSGI環境変数から読み込み
-url_for = lambda url: request.environ.get('ROOT_URL', '/') + url
+url_for = lambda url: request.environ.get('ROOT_URL', 'http://localhost:3333/') + url
 
 app = Flask(__name__)
 # url_for関数を上書き

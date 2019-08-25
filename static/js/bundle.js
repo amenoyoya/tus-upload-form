@@ -3220,7 +3220,7 @@ __webpack_require__.r(__webpack_exports__);
         self.progress = false, self.error = false;
 
         const upload = new tus_js_client__WEBPACK_IMPORTED_MODULE_0___default.a.Upload(file, {
-          endpoint: "http://localhost:3333/files/", // POSTできるendpointを指定する
+          endpoint: url_for('files/'), // POSTできるendpointを指定する
           retryDelays: [0, 3000, 5000, 10000, 20000], // リトライ遅延: 0, 3, 5, 10, 20秒
           chunkSize: 1000000, // 1MB, 1回のアップロードで送信するファイルサイズ（bytes）
           metadata: {
