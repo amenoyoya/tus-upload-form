@@ -11,15 +11,20 @@ def metadata2dict(metadata):
     return data
 
 # get saved file size
+## return false if not exists
 def get_saved_file_size(file_id):
-    return os.path.getsize(f'./static/uploaded/{file_id}')
+    path = f'./static/uploaded/{file_id}'
+    if not os.path.exists(path):
+        return False
+    return os.path.getsize(path)
 
 # save file, resumable
 def save_file(file_id, content):
+    path = f'./static/uploaded/{file_id}'
     # staticディレクトリに配置してダウンロードできるようにする
     if not os.path.isdir('./static/uploaded'):
         os.mkdir('./static/uploaded')
-    with open(f'./static/uploaded/{file_id}', 'ab' if os.path.isfile(file_id) else 'wb') as f:
+    with open(path, 'ab' if os.path.isfile(path) else 'wb') as f:
         f.write(content)
     # 保存済みサイズを返す
     return get_saved_file_size(file_id)
@@ -27,7 +32,7 @@ def save_file(file_id, content):
 # ---
 
 # ベースURLのルーティング関数
-## ベースURL: uWSGI環境変数から読み込み
+## ベースURL: uWSGI環境変数から読み込みfile_id
 url_for = lambda url: request.environ.get('ROOT_URL', 'http://localhost:3333/') + url
 
 app = Flask(__name__)
@@ -74,7 +79,7 @@ def resume(file_id):
     # response
     res = make_response('', 204)
     res.headers['Upload-Expires'] = datetime.now() + timedelta(hours=1) # レジューム不可になる期限＝1時間後
-    res.headers['Upload-Offset'] = saved_size # アップロード済みサイズ
+    res.headers['Upload-Offset'] = 0 if saved_size == False else saved_size # アップロード済みサイズ
     res.headers['Tus-Resumable'] = data['tus_resumable']
     return res
 
@@ -82,8 +87,10 @@ def resume(file_id):
 @app.route('/files/<string:file_id>', methods=['HEAD'])
 def confirm(file_id):
     # response
-    res = make_response('', 200)
-    res.headers['Upload-Offset'] = get_saved_file_size(file_id) # アップロード済みサイズ
+    saved_size = get_saved_file_size(file_id) # アップロード済みサイズ
+    res = make_response('', 404 if saved_size == False else 200)
+    if isinstance(saved_size, int):
+        res.headers['Upload-Offset'] = saved_size
     res.headers['Tus-Resumable'] = request.headers.get('Tus-Resumable')
     return res
 
