@@ -87,9 +87,3 @@ $ yarn webpack --watch
 # run python + flask server: http://localhost:3333
 $ python server.py
 ```
-
-***
-
-## TODO
-
-- `HEAD`リクエストが来たときのサーバーサイド処理を追加

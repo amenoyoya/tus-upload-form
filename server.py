@@ -13,7 +13,9 @@ def metadata2dict(metadata):
 
 # save file, resumable
 def save_file(file_id, content):
-    with open(file_id, 'ab' if os.path.isfile(file_id) else 'wb') as f:
+    if not os.path.isdir('./uploaded'):
+        os.mkdir('./uploaded')
+    with open(f'./uploaded/{file_id}', 'ab' if os.path.isfile(file_id) else 'wb') as f:
         f.write(content)
     # 保存済みサイズを返す
     return os.path.getsize(file_id)
