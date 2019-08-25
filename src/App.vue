@@ -63,7 +63,12 @@ export default {
             self.progress = '<p>Uploaded: ' + bytesUploaded + ' / ' + bytesTotal + ' bytes</p><p>' + percentage + ' %</p>';
           },
           onSuccess() {
-            self.progress = '<p>Download ' + upload.file.name + ' from ' + upload.url + '</p>';
+            // ファイル名取得
+            const paths = upload.url.split('/');
+            const filename = paths[paths.length -1];
+            // アップロード先（ダウンロード可能URL）を表示
+            const link = url_for('static/uploaded/' + filename);
+            self.progress = '<p>Download ' + upload.file.name + ' from <a target="_blank" href="' + link + '">' + link + '</a></p>';
           }
         });
         upload.start();

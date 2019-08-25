@@ -1,5 +1,4 @@
 from flask import Flask, render_template, request, make_response
-from pprint import pprint
 from datetime import datetime, timedelta
 import os, uuid, base64
 
@@ -11,14 +10,19 @@ def metadata2dict(metadata):
         data[values[0]] = base64.b64decode(values[1]).decode('utf-8')
     return data
 
+# get saved file size
+def get_saved_file_size(file_id):
+    return os.path.getsize(f'./static/uploaded/{file_id}')
+
 # save file, resumable
 def save_file(file_id, content):
-    if not os.path.isdir('./uploaded'):
-        os.mkdir('./uploaded')
-    with open(f'./uploaded/{file_id}', 'ab' if os.path.isfile(file_id) else 'wb') as f:
+    # staticディレクトリに配置してダウンロードできるようにする
+    if not os.path.isdir('./static/uploaded'):
+        os.mkdir('./static/uploaded')
+    with open(f'./static/uploaded/{file_id}', 'ab' if os.path.isfile(file_id) else 'wb') as f:
         f.write(content)
     # 保存済みサイズを返す
-    return os.path.getsize(file_id)
+    return get_saved_file_size(file_id)
 
 # ---
 
@@ -47,7 +51,6 @@ def upload():
         'upload_metadata': metadata2dict(request.headers.get('Upload-Metadata')),
         'id': str(uuid.uuid4()) # 任意のファイルID生成
     }
-    pprint(data)
     if data['upload_metadata']['fileext'] != '':
         # 拡張子がある場合は付与する
         data['id'] += '.' + data['upload_metadata']['fileext']
@@ -73,6 +76,15 @@ def resume(file_id):
     res.headers['Upload-Expires'] = datetime.now() + timedelta(hours=1) # レジューム不可になる期限＝1時間後
     res.headers['Upload-Offset'] = saved_size # アップロード済みサイズ
     res.headers['Tus-Resumable'] = data['tus_resumable']
+    return res
+
+# confirm uploaded file
+@app.route('/files/<string:file_id>', methods=['HEAD'])
+def confirm(file_id):
+    # response
+    res = make_response('', 200)
+    res.headers['Upload-Offset'] = get_saved_file_size(file_id) # アップロード済みサイズ
+    res.headers['Tus-Resumable'] = request.headers.get('Tus-Resumable')
     return res
 
 if __name__ == "__main__":
