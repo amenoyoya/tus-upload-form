@@ -7,7 +7,7 @@ def metadata2dict(metadata):
     data = {}
     for field in metadata.split(','):
         values = field.split(' ')
-        data[values[0]] = base64.b64decode(values[1]).decode('utf-8')
+        data[values[0]] = base64.b64decode(values[1]).decode('utf-8') if len(values) > 1 else ''
     return data
 
 # get saved file size
