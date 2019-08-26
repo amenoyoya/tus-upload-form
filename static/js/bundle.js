@@ -81,7 +81,7 @@
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./src/index.js");
+/******/ 	return __webpack_require__(__webpack_require__.s = 0);
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -27781,6 +27781,19 @@ new vue__WEBPACK_IMPORTED_MODULE_0__["default"]({
   components: { App: _App__WEBPACK_IMPORTED_MODULE_1__["default"] }, // 使用するコンポーネント
   template: '<app/>', // el（#app）の中に表示する内容
 });
+
+/***/ }),
+
+/***/ 0:
+/*!*******************************************!*\
+  !*** multi babel-polyfill ./src/index.js ***!
+  \*******************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+__webpack_require__(/*! babel-polyfill */"./node_modules/babel-polyfill/lib/index.js");
+module.exports = __webpack_require__(/*! ./src/index.js */"./src/index.js");
+
 
 /***/ })
 

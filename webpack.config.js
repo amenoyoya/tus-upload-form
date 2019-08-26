@@ -7,7 +7,7 @@ module.exports = {
   // webpack4系以降はmodeを指定しないと警告が出る
   mode: 'development',
   // エントリーポイント
-  entry: "./src/index.js",
+  entry: ["babel-polyfill", "./src/index.js"],
   // 出力設定
   output: {
     // バンドル後のファイル名
