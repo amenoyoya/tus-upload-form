@@ -5,9 +5,9 @@ const VueLoaderPlugin = require('vue-loader/lib/plugin');
 module.exports = {
   // 実行モード: develop => 開発, production => 本番
   // webpack4系以降はmodeを指定しないと警告が出る
-  mode: 'development',
+  mode: 'production',
   // エントリーポイント
-  entry: ["babel-polyfill", "./src/index.js"],
+  entry: "./src/index.js",
   // 出力設定
   output: {
     // バンドル後のファイル名
