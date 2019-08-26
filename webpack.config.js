@@ -5,6 +5,7 @@ const VueLoaderPlugin = require('vue-loader/lib/plugin');
 module.exports = {
   // 実行モード: develop => 開発, production => 本番
   // webpack4系以降はmodeを指定しないと警告が出る
+  // 関数定義の省略記法などが develop モードだとなぜか babel-loader でトランスコンパイルされないため production モードにする
   mode: 'production',
   // エントリーポイント
   entry: "./src/index.js",
