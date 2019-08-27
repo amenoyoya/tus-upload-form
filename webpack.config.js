@@ -3,10 +3,9 @@ const path = require('path');
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
 
 module.exports = {
-  // 実行モード: develop => 開発, production => 本番
+  // 実行モード: development => 開発, production => 本番
   // webpack4系以降はmodeを指定しないと警告が出る
-  // 関数定義の省略記法などが develop モードだとなぜか babel-loader でトランスコンパイルされないため production モードにする
-  mode: 'production',
+  mode: 'development',
   // エントリーポイント
   entry: "./src/index.js",
   // 出力設定
@@ -16,31 +15,34 @@ module.exports = {
     // 出力先のパス（※絶対パスで指定すること）
     path: path.join(__dirname, 'static', 'js')
   },
-  // ビルドしたJavaScriptにsource-mapを書き出す
-  devtool: 'inline-soruce-map',
   // モジュール設定
   module: {
     rules: [
       {
         // 拡張子 .js の場合
         test: /\\.js$/,
-        // babel-loaderを使って ES6 をコンパイル
-        loader: "babel-loader",
-        // Babel のオプションを指定
-        options: {
-          // preset_env の構文拡張を有効に
-          presets: [
-            ["@babel/preset-env"]
-          ]
-        },
         // node_modules/ 内のファイルは除外
-        exclude: /node_modules/
+        exclude: /node_modules/,
+        use: {
+          // babel-loaderを使って ES6 をコンパイル
+          loader: "babel-loader",
+          options: {
+            babelrc: path.join(__dirname, '.babelrc')
+          }
+        }
       },
       {
         // 拡張子 .vue の場合
         test: /\.vue$/,
-        // vue-loaderを使って vue をコンパイル
-        use: "vue-loader"
+        use: {
+          // vue-loaderを使って vue をコンパイル
+          loader: "vue-loader",
+          options: {
+            loaders: {
+              js: "babel-loader"
+            }
+          }
+        }
       },
       {
         // .css ファイル: css-loader => style-loader の順に適用
