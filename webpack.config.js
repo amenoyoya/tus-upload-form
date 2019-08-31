@@ -1,76 +1,58 @@
-const path = require('path');
-// vue-loader plugin
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
 
 module.exports = {
-  // 実行モード: development => 開発, production => 本番
-  // webpack4系以降はmodeを指定しないと警告が出る
-  mode: 'development',
-  // エントリーポイント
-  entry: "./src/index.js",
-  // 出力設定
+  mode: 'development', // 開発: development, 本番: production
+  entry: './src/index.js', // コンパイルのエントリーポイントファイル
+  // 出力先パス（絶対パス指定）
   output: {
-    // バンドル後のファイル名
-    filename: 'bundle.js',
-    // 出力先のパス（※絶対パスで指定すること）
-    path: path.join(__dirname, 'static', 'js')
+    path: `${__dirname}/static/js`,
+    filename: 'bundle.js'
   },
-  // モジュール設定
   module: {
+    // コンパイル設定
     rules: [
       {
-        // 拡張子 .js の場合
-        test: /\\.js$/,
-        // node_modules/ 内のファイルは除外
-        exclude: /node_modules/,
-        use: {
-          // babel-loaderを使って ES6 をコンパイル
-          loader: "babel-loader",
-          options: {
-            babelrc: path.join(__dirname, '.babelrc')
-          }
-        }
-      },
-      {
-        // 拡張子 .vue の場合
-        test: /\.vue$/,
-        use: {
-          // vue-loaderを使って vue をコンパイル
-          loader: "vue-loader",
-          options: {
-            loaders: {
-              js: "babel-loader"
+        // .js ファイル
+        test: /\.js$/,
+        use: [
+          {
+            loader: 'babel-loader', // babel-loader で ECMAScript5 にトランスコンパイル
+            options: {
+              presets: ['@babel/preset-env']　// ブラウザ環境に合わせて自動的にコンパイル
             }
           }
-        }
+        ]
       },
       {
-        // .css ファイル: css-loader => style-loader の順に適用
-        // - css-loader: cssをJSにトランスコンパイル
-        // - style-loader: <link>タグにスタイル展開
-        test: /\.css$/,
-        use: ['style-loader', 'css-loader']
-      },
+        // .vue ファイル
+        test: /\.vue$/,
+        use: [
+          {
+            loader: 'vue-loader', // vue-loader で Vueコンポーネントファイルをコンパイル
+            options: {
+              loaders: {
+                js: ['babel-loader'] // .vue ファイル内の script タグを babel-loader でトランスコンパイル
+              },
+              presets: ['@babel/preset-env']
+            }
+          }
+        ]
+      }
     ]
   },
-  // import文で読み込むモジュールの設定
+  // import設定
   resolve: {
-    extensions: [".js", ".vue"], // .js, .vue をimport可能に
-    modules: ["node_modules"], // node_modulesディレクトリからimport可能に
+    extensions: [".js", ".vue"], // .js, .vue を import
+    modules: ["node_modules"],
     alias: {
-      // vue-template-compilerに読ませてコンパイルするために必要
-      vue$: 'vue/dist/vue.esm.js',
+      vue$: 'vue/dist/vue.esm.js', // vue-template-compiler用
     },
   },
-  // VueLoaderPluginロード
   plugins: [new VueLoaderPlugin()],
   // 開発サーバー設定
   devServer: {
-    // 起点ディレクトリを public/ に設定
-    contentBase: path.join(__dirname, 'public'),
-    // ポートを3000に設定
+    contentBase: `${__dirname}/public`, // サーバールートディレクトリ
     port: 3000,
-    // ブラウザを自動的に開く
-    open: true
+    open: true // ブラウザを自動的に開く
   }
 };

@@ -33,7 +33,7 @@ def save_file(file_id, content):
 
 # ベースURLのルーティング関数
 ## ベースURL: uWSGI環境変数から読み込みfile_id
-url_for = lambda url: request.environ.get('ROOT_URL', 'http://localhost:3333/') + url
+url_for = lambda url: request.environ.get('ROOT_URL', 'http://192.168.11.237:3333/') + url
 
 app = Flask(__name__)
 # url_for関数を上書き
@@ -96,4 +96,4 @@ def confirm(file_id):
 
 if __name__ == "__main__":
     # run server: http://localhost:3333
-    app.run(port=3333, debug=True)
+    app.run(port=3333, debug=True, host="0.0.0.0")
