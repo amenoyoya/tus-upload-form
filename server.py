@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, make_response
+from flask_cors import CORS
 from datetime import datetime, timedelta
 import os, uuid, base64
 
@@ -36,6 +37,8 @@ def save_file(file_id, content):
 url_for = lambda url: request.environ.get('ROOT_URL', 'http://192.168.11.237:3333/') + url
 
 app = Flask(__name__)
+CORS(app)
+
 # url_for関数を上書き
 app.jinja_env.globals.update(url_for = url_for)
 
@@ -62,6 +65,9 @@ def upload():
     res = make_response('', 201)
     res.headers['Location'] = url_for('files/') + data['id']
     res.headers['Tus-Resumable'] = data['tus_resumable']
+    #res.headers['Access-Control-Allow-Origin'] = request.environ['HTTP_ORIGIN']
+    #res.headers['Access-Control-Allow-Headers'] = 'access-control-allow-origin,content-type'
+    res.headers['Access-Control-Expose-Headers'] = 'Upload-Offset, Location, Upload-Length, Tus-Version, Tus-Resumable, Tus-Max-Size, Tus-Extension, Upload-Metadata'
     files[data['id']] = int(data['upload_length']) # アップロード予定サイズを保持
     return res
 
@@ -81,6 +87,9 @@ def resume(file_id):
     res.headers['Upload-Expires'] = datetime.now() + timedelta(hours=1) # レジューム不可になる期限＝1時間後
     res.headers['Upload-Offset'] = 0 if saved_size == False else saved_size # アップロード済みサイズ
     res.headers['Tus-Resumable'] = data['tus_resumable']
+    #res.headers['Access-Control-Allow-Origin'] = request.environ['HTTP_ORIGIN']                                                                                                                             
+    #res.headers['Access-Control-Allow-Headers'] = 'access-control-allow-origin,content-type'                                                                                                                
+    res.headers['Access-Control-Expose-Headers'] = 'Upload-Offset, Location, Upload-Length, Tus-Version, Tus-Resumable, Tus-Max-Size, Tus-Extension, Upload-Metadata' 
     return res
 
 # confirm uploaded file
