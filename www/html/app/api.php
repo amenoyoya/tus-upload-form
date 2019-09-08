@@ -40,7 +40,9 @@ function saveFile($id, $content) {
     if (!is_dir('./static/uploaded')) {
         mkdir('./static/uploaded');
     }
-    return file_put_contents($path, $content, FILE_APPEND);
+    file_put_contents($path, $content, FILE_APPEND);
+    // 保存済みサイズを返す
+    return getSavedFileSize($id);
 }
 
 // create file upload
