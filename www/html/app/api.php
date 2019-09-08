@@ -5,82 +5,85 @@ namespace Slim\Framework;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
-// login api
-Application::api('post', '/api/login/', function (Request $request, Response $response, array $args, array $json) {
-    if (!isset($json['username']) || !isset($json['password'])) {
-        return ['auth' => false, 'message' => 'Invalid parameters'];
+/**
+ * HTTP_UPLOAD_METADATA を連想配列に変換
+ * @return array $data
+ */
+function metadataToArray($metadata) {
+    $data = [];
+    foreach (explode(',', $metadata) as $field) {
+        $values = explode(' ', $field);
+        $data[$values[0]] = count($values) > 1? base64_decode($values[1]): '';
     }
-    $users = Model\User::find('all', ['conditions' => ['name' => $json['username']]]);
-    if (count($users) > 0 && password_verify($json['password'], $users[0]->password)) {
-        // tokenを発行しセッションに保存
-        $authToken = bin2hex(openssl_random_pseudo_bytes(16));
-        $_SESSION['auth_token'] = $authToken;
-        $_SESSION['auth_username'] = $users[0]->name;
-        // tokenとログインユーザー名を返す
-        return ['auth' => true, 'token' => $authToken, 'username' => $users[0]->name, 'message' => 'Login as admin'];
+    return $data;
+}
+
+/**
+ * get saved file size
+ * @return false if not exists
+ */
+function getSavedFileSize($id) {
+    $path = "./static/uploaded/{$id}";
+    if (!file_exists($path)) {
+        return False;
     }
-    return ['auth' => false, 'message' => 'Invalid username or password'];
+    return filesize($path);
+}
+
+/**
+ * save file, resumable
+ * @return int $savedFileSize
+ */
+function saveFile($id, $content) {
+    $path = "./static/uploaded/{$id}";
+    // staticディレクトリに配置してダウンロードできるようにする
+    if (!is_dir('./static/uploaded')) {
+        mkdir('./static/uploaded');
+    }
+    return file_put_contents($path, $content, FILE_APPEND);
+}
+
+// create file upload
+Application::api('post', '/api/files/', function (Request $request, Response $response, array $args, array $json) {
+    $headers = $request->getHeaders();
+    $data = [
+        'content_length'   => $headers['CONTENT_LENGTH'][0],
+        'upload_length'    => $headers['HTTP_UPLOAD_LENGTH'][0],
+        'tus_resumable'    => $headers['HTTP_TUS_RESUMABLE'][0],
+        'upload_metadata'  => metadataToArray($headers['HTTP_UPLOAD_METADATA'][0]),
+        'id'               => bin2hex(openssl_random_pseudo_bytes(16)) // 任意IDをファイル名にする
+    ];
+    if ($data['upload_metadata']['fileext'] !== '') {
+        # 拡張子がある場合は付与する
+        $data['id'] .= '.' . $data['upload_metadata']['fileext'];
+    }
+    return $response->withStatus(201)
+        ->withHeader('Location', "/api/files/{$data['id']}")
+        ->withHeader('Tus-Resumable', $data['tus_resumable']);
 });
 
-// login confirm api
-Application::api('post', '/api/auth/', function (Request $request, Response $response, array $args, array $json) {
-    if (!isset($_SESSION['auth_token']) || empty($json['auth_token'])) {
-        return ['auth' => false, 'message' => 'Not authenticated yet'];
+// resume file upload / finish file upload
+Application::api(['patch', 'head'], '/api/files/{id}', function (Request $request, Response $response, array $args, array $json) {
+    // PATCH: resume file upload
+    if ($request->isPatch()) {
+        $headers = $request->getHeaders();
+        $data = [
+            'content_type'   => $headers['CONTENT_TYPE'][0],
+            'content_length' => $headers['CONTENT_LENGTH'][0],     // 残りアップロードサイズ
+            'upload_offset'  => $headers['HTTP_UPLOAD_OFFSET'][0], // アップロード済みサイズ
+            'tus_resumable'  => $headers['HTTP_TUS_RESUMABLE'][0]
+        ];
+        // ファイル保存
+        $saved = saveFile($args['id'], $request->getBody());
+        $now = new \DateTime();
+        return $response->withStatus(204)
+            ->withHeader('Upload-Expires', $now->modify('+1 hour')->format('Y-m-d H:i:s')) // レジューム不可になる期限＝1時間後
+            ->withHeader('Upload-Offset', $saved) // アップロード済みサイズ
+            ->withHeader('Tus-Resumable', $data['tus_resumable']);
     }
-    if ($_SESSION['auth_token'] !== $json['auth_token']) {
-        return ['auth' => false, 'message' => 'Authentication timed out'];
-    }
-    return ['auth' => true, 'message' => 'Authenticated'];
-});
-
-// get session login info api
-Application::api('post', '/api/auth/session/', function (Request $request, Response $response, array $args, array $json) {
-    if (isset($_SESSION['auth_token']) && isset($_SESSION['auth_username'])) {
-        return ['token' => $_SESSION['auth_token'], 'username' => $_SESSION['auth_username']];
-    }
-    // 基本的に一回しか実行しないように、セッション保存がない場合は適当な token を返す
-    return ['token' => 'null', 'username' => ''];
-});
-
-// log out api
-Application::api('post', '/api/logout/', function (Request $request, Response $response, array $args, array $json) {
-    if (isset($_SESSION['auth_token'])) {
-        unset($_SESSION['auth_token']);
-    }
-    if (isset($_SESSION['auth_username'])) {
-        unset($_SESSION['auth_username']);
-    }
-    return ['token' => 'null', 'username' => ''];
-});
-
-// sign up api
-Application::api('post', '/api/signup/', function (Request $request, Response $response, array $args, array $json) {
-    if (!isset($json['username']) || !isset($json['password'])
-        || strlen($json['username']) > 15 || strlen($json['password']) > 30
-    ) {
-        return ['reg' => false, 'message' => 'Invalid parameters'];
-    }
-    $users = Model\User::find('all', ['conditions' => ['name' => $json['username']]]);
-    if (count($users) > 0) {
-        return ['reg' => false, 'message' => "User '{$json['username']}' already exists"];
-    }
-    // register
-    $date = new \DateTime();
-    $user = new Model\User();
-    $user->name = $json['username'];
-    $user->password = password_hash($json['password'], PASSWORD_BCRYPT);
-    if ($user->save()) {
-        return ['reg' => true, 'message' => "User '{$user->name}' registered"];
-    }
-    return ['reg' => false, 'message' => 'Database error occured'];
-});
-
-// request info
-Application::get('/request/', function (Request $request, Response $response, array $args) {
-    $html = '';
-    foreach ($request->getHeaders() as $name => $values) {
-        $html .= '<dt>' . $name . '</dt><dd>' . implode(', ', $values) . '</dd>';
-    }
-    $response->getBody()->write("<dl>{$html}</dl>");
-    return $response;
+    // HEAD: finish file upload
+    $saved = getSavedFileSize($args['id']);
+    return $response->withStatus($saved? 200: 404)
+        ->withHeader('Upload-Offset', $saved)
+        ->withHeader('Tus-Resumable', $request->getHeaders()['HTTP_TUS_RESUMABLE'][0]);
 });
