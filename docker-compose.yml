@@ -1,0 +1,37 @@
+version: "3"
+
+services:
+  web:
+    build: ./web
+    links:
+      - mailhog # mailhogコンテナとリンク
+    volumes:
+      # 共有ディレクトリ
+      - ./www/html:/var/www/html # ドキュメントルート
+      # virtualhost設定ファイル
+      - ./web/000-default.conf:/etc/apache2/sites-available/000-default.conf
+      # php設定ファイルを共有
+      - ./web/php.ini:/usr/local/etc/php/php.ini
+    network_mode: bridge
+    environment:
+      # Composer設定
+      COMPOSER_ALLOW_SUPERUSER: 1 # root権限での実行を許可
+      COMPOSER_NO_INTERACTION: 1  # 非対話的にインストール
+      # dbコンテナのDBに接続するための環境設定
+      DB_HOST: mysql
+      DB_DATABASE: web
+      DB_USERNAME: root
+      DB_PASSWORD: root
+      # VIRTUAL_HOST設定（nginx-proxy）
+      VIRTUAL_HOST: tus-upload-form.localhost # http://tus-upload-form.localhost => docker://web:80
+      VIRTUAL_PORT: 80
+  mailhog:
+    image: mailhog/mailhog
+    # ports:
+      # - 8025:8025 # HTTP Port (nginx-proxyコンテナを使っているならポート設定は不要)
+      # - 1025:1025 # SMTP Port
+    network_mode: bridge
+    environment:
+      # VIRTUAL_HOST設定（nginx-proxy）
+      VIRTUAL_HOST: mail.tus-upload-form.localhost # http://mail.tus-upload-form.localhost => docker://mailhog:8025
+      VIRTUAL_PORT: 8025
