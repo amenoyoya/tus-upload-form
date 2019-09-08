@@ -1,0 +1,29 @@
+web:
+    # ルートドキュメントHTML（基本いじらない）
+    home_html: |
+        <!DOCTYPE html>
+        <html lang="ja">
+            <head>
+                <meta charset="utf-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1">
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.5/css/bulma.min.css">
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css">
+                <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
+            </head>
+            <body>
+                <input id="csrf" type="hidden" value="%s">
+                <div id="app"></div>
+                <script src="/static/js/bundle.js"></script>
+            </body>
+        </html>
+api:
+    # API実行許可するIPを指定
+    ## true 指定の場合は制限なし
+    ## false 指定の場合は非公開
+    accept_ips:
+        - "172.17.0.1"
+db:
+    # Database利用/無効化
+    use: false
+    # Database利用の場合、Database接続設定ファイル（基本いじらない）
+    config_file: ./phinx.yml

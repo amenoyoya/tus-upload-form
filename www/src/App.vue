@@ -47,7 +47,7 @@ export default {
         self.progress = false, self.error = false;
 
         const upload = new tus.Upload(file, {
-          endpoint: url_for('files/'), // POSTできるendpointを指定する
+          endpoint: '/api/files/', // POSTできるendpointを指定する
           retryDelays: [0, 3000, 5000, 10000, 20000], // リトライ遅延: 0, 3, 5, 10, 20秒
           chunkSize: 1000000, // 1MB, 1回のアップロードで送信するファイルサイズ（bytes）
           metadata: {

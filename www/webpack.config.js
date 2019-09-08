@@ -1,11 +1,12 @@
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
+const path = require('path');
 
 module.exports = {
   mode: 'development', // 開発: development, 本番: production
   entry: './src/index.js', // コンパイルのエントリーポイントファイル
   // 出力先パス（絶対パス指定）
   output: {
-    path: `${__dirname}/static/js`,
+    path: path.join(__dirname, 'html', 'static', 'js'),
     filename: 'bundle.js'
   },
   module: {
@@ -37,12 +38,22 @@ module.exports = {
             }
           }
         ]
+      },
+      {
+        // jsonファイル
+        test: /\.json$/,
+        type: "javascript/auto",
+        use: [
+          {
+            loader: 'json-loader'
+          }
+        ]
       }
     ]
   },
   // import設定
   resolve: {
-    extensions: [".js", ".vue"], // .js, .vue を import
+    extensions: [".js", ".vue", ".json"], // .js, .vue, .json を import
     modules: ["node_modules"],
     alias: {
       vue$: 'vue/dist/vue.esm.js', // vue-template-compiler用
@@ -51,7 +62,7 @@ module.exports = {
   plugins: [new VueLoaderPlugin()],
   // 開発サーバー設定
   devServer: {
-    contentBase: `${__dirname}/public`, // サーバールートディレクトリ
+    contentBase: path.join(__dirname, 'html'), // サーバールートディレクトリ
     port: 3000,
     open: true // ブラウザを自動的に開く
   }
