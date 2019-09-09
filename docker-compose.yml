@@ -12,6 +12,8 @@ services:
       - ./web/000-default.conf:/etc/apache2/sites-available/000-default.conf
       # php設定ファイルを共有
       - ./web/php.ini:/usr/local/etc/php/php.ini
+    # コンテナ内のApache実行ユーザー`www-data`のユーザーIDを環境変数`UID`に変更してApache起動
+    command: bash -c 'usermod -o -u ${UID} www-data; groupmod -o -g ${UID} www-data; apachectl -D FOREGROUND'
     network_mode: bridge
     environment:
       # Composer設定
