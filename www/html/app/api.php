@@ -45,23 +45,32 @@ function saveFile($id, $content) {
     return getSavedFileSize($id);
 }
 
-// create file upload
-Application::api('post', '/api/files/', function (Request $request, Response $response, array $args, array $json) {
-    $headers = $request->getHeaders();
-    $data = [
-        'content_length'   => $headers['CONTENT_LENGTH'][0],
-        'upload_length'    => $headers['HTTP_UPLOAD_LENGTH'][0],
-        'tus_resumable'    => $headers['HTTP_TUS_RESUMABLE'][0],
-        'upload_metadata'  => metadataToArray($headers['HTTP_UPLOAD_METADATA'][0]),
-        'id'               => bin2hex(openssl_random_pseudo_bytes(16)) // 任意IDをファイル名にする
-    ];
-    if ($data['upload_metadata']['fileext'] !== '') {
-        # 拡張子がある場合は付与する
-        $data['id'] .= '.' . $data['upload_metadata']['fileext'];
+// create file upload / tell tus info
+Application::api(['post', 'options'], '/api/files/', function (Request $request, Response $response, array $args, array $json) {
+    if ($request->isPost()) {
+        // create file upload
+        $headers = $request->getHeaders();
+        $data = [
+            'content_length'   => $headers['CONTENT_LENGTH'][0],
+            'upload_length'    => $headers['HTTP_UPLOAD_LENGTH'][0],
+            'tus_resumable'    => $headers['HTTP_TUS_RESUMABLE'][0],
+            'upload_metadata'  => metadataToArray($headers['HTTP_UPLOAD_METADATA'][0]),
+            'id'               => bin2hex(openssl_random_pseudo_bytes(16)) // 任意IDをファイル名にする
+        ];
+        if ($data['upload_metadata']['fileext'] !== '') {
+            # 拡張子がある場合は付与する
+            $data['id'] .= '.' . $data['upload_metadata']['fileext'];
+        }
+        return $response->withStatus(201)
+            ->withHeader('Location', "/api/files/{$data['id']}")
+            ->withHeader('Tus-Resumable', $data['tus_resumable']);
     }
-    return $response->withStatus(201)
-        ->withHeader('Location', "/api/files/{$data['id']}")
-        ->withHeader('Tus-Resumable', $data['tus_resumable']);
+    // tell tus info
+    return $response->withStatus(204)
+        ->withHeader('Tus-Resumable', '1.0.0')
+        ->withHeader('Tus-Version', '1.0.0,0.2.2,0.2.1')
+        ->withHeader('Tus-Max-Size', 1073741824 * 4) // Max: 4GB
+        ->withHeader('Tus-Extension', 'creation,expiration');
 });
 
 // resume file upload / finish file upload
