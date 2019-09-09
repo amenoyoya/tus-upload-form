@@ -81,6 +81,17 @@ class Application {
     }
 
     /**
+     * CORS対応Response生成
+     */
+    public static function CORS(Response $response)
+    {
+        return $response
+            ->withHeader('Access-Control-Allow-Origin', '*')
+            ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization')
+            ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD');
+    }
+
+    /**
      * 外部実行用API定義メソッド: 誰でも or 許可されたIP から実行可能
      */
     public static function api($method, $route, callable $callback)
@@ -90,16 +101,16 @@ class Application {
             $json = json_decode($request->getBody(), true);
             // check ips
             if (!self::checkIPs()) {
-                return $response->withStatus(403); // Forbidden error
+                return self::CORS($response->withStatus(403)); // Forbidden error
             }
             // callback
             $res = $callback($request, $response, $args, $json? $json: []);
             if (is_array($res)) {
                 // return json data
-                $response->getBody()->write(json_encode());
-                return $response->withHeader('Content-Type', 'application/json');
+                $response->getBody()->write(json_encode($res));
+                return self::CORS($response->withHeader('Content-Type', 'application/json'));
             }
-            return $res;
+            return self::CORS($res);
         };
         if (is_array($method)) {
             return self::$app->map($method, $route, $proc);
@@ -125,7 +136,7 @@ class Application {
             $res = $callback($request, $response, $args, $json? $json: []);
             if (is_array($res)) {
                 // return json data
-                $response->getBody()->write(json_encode());
+                $response->getBody()->write(json_encode($res));
                 return $response->withHeader('Content-Type', 'application/json');
             }
             return $res;
