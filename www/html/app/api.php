@@ -70,7 +70,8 @@ Application::api(['post', 'options'], '/api/files/', function (Request $request,
         ->withHeader('Tus-Resumable', '1.0.0')
         ->withHeader('Tus-Version', '1.0.0,0.2.2,0.2.1')
         ->withHeader('Tus-Max-Size', 1073741824 * 4) // Max: 4GB
-        ->withHeader('Tus-Extension', 'creation,expiration');
+        ->withHeader('Tus-Extension', 'creation,expiration,checksum')
+        ->withHeader('Tus-Checksum-Algorithm', 'md5,sha1,crc32');
 });
 
 // resume file upload / tell tus info / finish file upload
@@ -103,7 +104,8 @@ Application::api(['patch', 'options', 'head'], '/api/files/{id}', function (Requ
             ->withHeader('Tus-Resumable', '1.0.0')
             ->withHeader('Tus-Version', '1.0.0,0.2.2,0.2.1')
             ->withHeader('Tus-Max-Size', 1073741824 * 4) // Max: 4GB
-            ->withHeader('Tus-Extension', 'creation,expiration');
+            ->withHeader('Tus-Extension', 'creation,expiration,checksum')
+            ->withHeader('Tus-Checksum-Algorithm', 'md5,sha1,crc32');
     }
     // HEAD: finish file upload
     $saved = getSavedFileSize($args['id']);
