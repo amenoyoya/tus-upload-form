@@ -67,7 +67,7 @@ export default {
             const paths = upload.url.split('/');
             const filename = paths[paths.length -1];
             // アップロード先（ダウンロード可能URL）を表示
-            const link = url_for('static/uploaded/' + filename);
+            const link = '/static/uploaded/' + filename;
             self.progress = '<p>Download ' + upload.file.name + ' from <a target="_blank" href="' + link + '">' + link + '</a></p>';
           }
         });

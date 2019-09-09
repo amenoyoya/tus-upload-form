@@ -50,7 +50,7 @@ def home():
     return render_template('home.jinja')
 
 # create file upload
-@app.route('/files/', methods=['POST'])
+@app.route('/api/files/', methods=['POST'])
 def upload():
     data = {
         'content_length': request.headers.get('Content-Length'),
@@ -63,7 +63,7 @@ def upload():
         # 拡張子がある場合は付与する
         data['id'] += '.' + data['upload_metadata']['fileext']
     res = make_response('', 201)
-    res.headers['Location'] = url_for('files/') + data['id']
+    res.headers['Location'] = '/api/files/' + data['id']
     res.headers['Tus-Resumable'] = data['tus_resumable']
     #res.headers['Access-Control-Allow-Origin'] = request.environ['HTTP_ORIGIN']
     #res.headers['Access-Control-Allow-Headers'] = 'access-control-allow-origin,content-type'
@@ -72,7 +72,7 @@ def upload():
     return res
 
 # resume file upload
-@app.route('/files/<string:file_id>', methods=['PATCH'])
+@app.route('/api/files/<string:file_id>', methods=['PATCH'])
 def resume(file_id):
     data = {
         'content_type': request.headers.get('Content-Type'),
@@ -93,7 +93,7 @@ def resume(file_id):
     return res
 
 # confirm uploaded file
-@app.route('/files/<string:file_id>', methods=['HEAD'])
+@app.route('/api/files/<string:file_id>', methods=['HEAD'])
 def confirm(file_id):
     # response
     saved_size = get_saved_file_size(file_id) # アップロード済みサイズ
