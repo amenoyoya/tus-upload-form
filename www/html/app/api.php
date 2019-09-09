@@ -95,11 +95,6 @@ Application::api(['patch', 'options', 'head'], '/api/files/{id}', function (Requ
     }
     // OPTIONS: tell tus info
     if ($request->isOptions()) {
-        $saved = getSavedFileSize($args['id']);
-        if ($saved !== false) {
-            // 保存済みのファイルがあるならレジューム
-            $response = $response->withHeader('Upload-Offset', $saved);
-        }
         return $response->withStatus(204)
             ->withHeader('Tus-Resumable', '1.0.0')
             ->withHeader('Tus-Version', '1.0.0,0.2.2,0.2.1')
@@ -111,5 +106,6 @@ Application::api(['patch', 'options', 'head'], '/api/files/{id}', function (Requ
     $saved = getSavedFileSize($args['id']);
     return $response->withStatus($saved? 200: 404)
         ->withHeader('Upload-Offset', $saved)
+        ->withHeader('Upload-Length', $saved)
         ->withHeader('Tus-Resumable', $request->getHeaders()['HTTP_TUS_RESUMABLE'][0]);
 });
