@@ -47,8 +47,8 @@ function saveFile($id, $content) {
 
 // create file upload / tell tus info
 Application::api(['post', 'options'], '/api/files/', function (Request $request, Response $response, array $args, array $json) {
+    // POST: create file upload
     if ($request->isPost()) {
-        // create file upload
         $headers = $request->getHeaders();
         $data = [
             'content_length'   => $headers['CONTENT_LENGTH'][0],
@@ -65,7 +65,7 @@ Application::api(['post', 'options'], '/api/files/', function (Request $request,
             ->withHeader('Location', "/api/files/{$data['id']}")
             ->withHeader('Tus-Resumable', $data['tus_resumable']);
     }
-    // tell tus info
+    // OPTIONS: tell tus info
     return $response->withStatus(204)
         ->withHeader('Tus-Resumable', '1.0.0')
         ->withHeader('Tus-Version', '1.0.0,0.2.2,0.2.1')
@@ -73,8 +73,8 @@ Application::api(['post', 'options'], '/api/files/', function (Request $request,
         ->withHeader('Tus-Extension', 'creation,expiration');
 });
 
-// resume file upload / finish file upload
-Application::api(['patch', 'head'], '/api/files/{id}', function (Request $request, Response $response, array $args, array $json) {
+// resume file upload / tell tus info / finish file upload
+Application::api(['patch', 'options', 'head'], '/api/files/{id}', function (Request $request, Response $response, array $args, array $json) {
     // PATCH: resume file upload
     if ($request->isPatch()) {
         $headers = $request->getHeaders();
@@ -91,6 +91,14 @@ Application::api(['patch', 'head'], '/api/files/{id}', function (Request $reques
             ->withHeader('Upload-Expires', $now->modify('+1 hour')->format('Y-m-d H:i:s')) // レジューム不可になる期限＝1時間後
             ->withHeader('Upload-Offset', $saved) // アップロード済みサイズ
             ->withHeader('Tus-Resumable', $data['tus_resumable']);
+    }
+    // OPTIONS: tell tus info
+    if ($request->isOptions()) {
+        return $response->withStatus(204)
+            ->withHeader('Tus-Resumable', '1.0.0')
+            ->withHeader('Tus-Version', '1.0.0,0.2.2,0.2.1')
+            ->withHeader('Tus-Max-Size', 1073741824 * 4) // Max: 4GB
+            ->withHeader('Tus-Extension', 'creation,expiration');
     }
     // HEAD: finish file upload
     $saved = getSavedFileSize($args['id']);
