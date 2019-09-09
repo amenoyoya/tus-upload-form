@@ -25,7 +25,7 @@ function metadataToArray($metadata) {
 function getSavedFileSize($id) {
     $path = "./static/uploaded/{$id}";
     if (!file_exists($path)) {
-        return False;
+        return false;
     }
     return filesize($path);
 }
@@ -94,6 +94,11 @@ Application::api(['patch', 'options', 'head'], '/api/files/{id}', function (Requ
     }
     // OPTIONS: tell tus info
     if ($request->isOptions()) {
+        $saved = getSavedFileSize($args['id']);
+        if ($saved !== false) {
+            // 保存済みのファイルがあるならレジューム
+            $response = $response->withHeader('Upload-Offset', $saved);
+        }
         return $response->withStatus(204)
             ->withHeader('Tus-Resumable', '1.0.0')
             ->withHeader('Tus-Version', '1.0.0,0.2.2,0.2.1')
