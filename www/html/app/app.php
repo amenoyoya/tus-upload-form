@@ -85,11 +85,12 @@ class Application {
      */
     public static function CORS(Response $response)
     {
-        // 全てのリクエスト元, リクエストヘッダー, リクエストメソッドを許可
+        // 全てのリクエスト元, リクエストメソッド, リクエストヘッダー, レスポンスヘッダーを許可
         return $response
             ->withHeader('Access-Control-Allow-Origin', '*')
+            ->withHeader('Access-Control-Allow-Methods', '*')
             ->withHeader('Access-Control-Allow-Headers', '*')
-            ->withHeader('Access-Control-Allow-Methods', '*');
+            ->withHeader('Access-Control-Expose-Headers', '*');
     }
 
     /**
