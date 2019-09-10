@@ -45,6 +45,22 @@ function saveFile($id, $content) {
     return getSavedFileSize($id);
 }
 
+/**
+ * アップロードしなければならないファイルサイズを保存
+ */
+function saveUploadSize($id, $size) {
+    return file_put_contents("/tmp/{$id}", $size);
+}
+
+/**
+ * アップロードしなければならないファイルサイズを取得
+ * @return int $sizeForUpload
+ */
+function loadUploadSize($id) {
+    $sizeForUpload = file_get_contents("/tmp/${id}");
+    return $sizeForUpload === ''? 0: intval($sizeForUpload);
+}
+
 // create file upload / tell tus info
 Application::api(['post', 'options'], '/api/files/', function (Request $request, Response $response, array $args, array $json) {
     // POST: create file upload
@@ -58,9 +74,11 @@ Application::api(['post', 'options'], '/api/files/', function (Request $request,
             'id'               => bin2hex(openssl_random_pseudo_bytes(16)) // 任意IDをファイル名にする
         ];
         if ($data['upload_metadata']['fileext'] !== '') {
-            # 拡張子がある場合は付与する
+            // 拡張子がある場合は付与する
             $data['id'] .= '.' . $data['upload_metadata']['fileext'];
         }
+        // アップロードしなければならないファイルサイズを保存
+        saveUploadSize($data['id'], $data['upload_length']);
         return $response->withStatus(201)
             ->withHeader('Location', "/api/files/{$data['id']}")
             ->withHeader('Tus-Resumable', $data['tus_resumable']);
@@ -104,8 +122,8 @@ Application::api(['patch', 'options', 'head'], '/api/files/{id}', function (Requ
     }
     // HEAD: finish file upload
     $saved = getSavedFileSize($args['id']);
-    return $response->withStatus($saved? 200: 404)
-        ->withHeader('Upload-Offset', $saved)
-        ->withHeader('Upload-Length', $saved)
+    return $response->withStatus($saved === false? 404: 200)
+        ->withHeader('Upload-Offset', $saved === false? 0: $saved)
+        ->withHeader('Upload-Length', loadUploadSize($args['id']))
         ->withHeader('Tus-Resumable', $request->getHeaders()['HTTP_TUS_RESUMABLE'][0]);
 });
