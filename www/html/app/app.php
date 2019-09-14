@@ -130,7 +130,6 @@ class Application {
             // only accept json data
             $json = json_decode($request->getBody(), true);
             // check csrf token & host name
-            $check = self::checkCsrf($json);
             if (!self::checkCsrf($json) || $request->getUri()->getHost() !== $_SERVER['SERVER_NAME']) {
                 return $response->withStatus(403); // Forbidden error
             }
