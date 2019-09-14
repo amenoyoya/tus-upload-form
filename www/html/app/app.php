@@ -83,7 +83,7 @@ class Application {
     /**
      * CORS対応Response生成
      */
-    public static function CORS(Response $response)
+    public static function setCORS(Response $response)
     {
         // 全てのリクエスト元, リクエストメソッド, リクエストヘッダー, レスポンスヘッダーを許可
         return $response
@@ -103,16 +103,16 @@ class Application {
             $json = json_decode($request->getBody(), true);
             // check ips
             if (!self::checkIPs()) {
-                return self::CORS($response->withStatus(403)); // Forbidden error
+                return self::setCORS($response->withStatus(403)); // Forbidden error
             }
             // callback
             $res = $callback($request, $response, $args, $json? $json: []);
             if (is_array($res)) {
                 // return json data
                 $response->getBody()->write(json_encode($res));
-                return self::CORS($response->withHeader('Content-Type', 'application/json'));
+                return self::setCORS($response->withHeader('Content-Type', 'application/json'));
             }
-            return self::CORS($res);
+            return self::setCORS($res);
         };
         if (is_array($method)) {
             return self::$app->map($method, $route, $proc);
