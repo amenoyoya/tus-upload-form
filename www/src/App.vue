@@ -2,8 +2,9 @@
   <section class="section">
     <div class="container">
       <div class="field">
-        <div class="control">
-          <input class="input" type="file" placeholder="upload file" @change="onFileChange">
+        <div class="control dropfile">
+          <input class="input" type="file" @change="onFileChange">
+          <p>Drop file here</p>
         </div>
       </div>
       <div class="field">
