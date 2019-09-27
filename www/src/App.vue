@@ -2,9 +2,16 @@
   <section class="section">
     <div class="container">
       <div class="field">
-        <div class="control dropfile">
-          <input class="input" type="file" @change="onFileChange">
-          <p>Drop file here</p>
+        <div :class="'control dropfile ' + (dragover? 'dragover': '')"
+          @dragover.prevent="onDragOver($event, true)"
+          @dragleave.prevent="onDragOver($event, false)"
+          @drop.prevent="onDrop"
+          @click.prevent="onClick"
+        >
+          <div class="background" v-if="files.length == 0">
+            <i class="fas fa-plus"></i>
+          </div>
+          <p v-html="dropzone_text"></p>
         </div>
       </div>
       <div class="field">
@@ -32,11 +39,33 @@ export default {
       files: [],
       progress: false,
       error: false,
+      dragover: false,
+      dropzone_text: 'Drop file here, or Click me.'
     }
   },
   methods: {
     onFileChange(e) {
       this.files = e.target.files || e.dataTransfer.files;
+      if (this.files.length > 0) {
+        this.dropzone_text = '<i class="fas fa-cube"></i>&nbsp;' + this.files[0].name;
+      }
+    },
+    onDragOver(e, status) {
+      if (e.dataTransfer.types == "text/plain") {
+        // ファイルではなく、html要素をドラッグしてきた時は処理を中止
+        return false;
+      }
+      this.dragover = status;
+    },
+    onDrop(e) {
+      this.dragover = false;
+      this.onFileChange(e);
+    },
+    onClick() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.onchange = this.onFileChange;
+      input.click();
     },
     onSubmit() {
       if (this.files.length > 0) {
