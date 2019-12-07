@@ -27,6 +27,9 @@ services:
       # VIRTUAL_HOST設定（nginx-proxy）
       VIRTUAL_HOST: tus-upload-form.localhost # http://tus-upload-form.localhost => docker://web:80
       VIRTUAL_PORT: 80
+      # SSL化設定（letsencrypt-nginx-proxy-companion）
+      LETSENCRYPT_HOST: tus-upload-form.localhost
+      LETSENCRYPT_EMAIL: admin@tus-upload-form.localhost
   mailhog:
     image: mailhog/mailhog
     # ports:
